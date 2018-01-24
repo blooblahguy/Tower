@@ -1,8 +1,7 @@
 camera = {}
 camera.x = 0
 camera.y = 0
-camera.scaleX = 1
-camera.scaleY = 1
+camera.scale = 1
 camera.rotation = 0
 camera.dragging = false
 camera.dragging_x = 0
@@ -22,8 +21,8 @@ function camera:set()
 
 	love.graphics.push()
 	love.graphics.rotate(-self.rotation)
-	love.graphics.scale(1 / self.scaleX, 1 / self.scaleY)
 	love.graphics.translate(-self.x, -self.y)
+	love.graphics.scale(1 / self.scale)
 end
 
 function camera:unset()
@@ -39,9 +38,35 @@ function camera:rotate(dr)
 	self.rotation = self.rotation + dr
 end
 
-function camera:scale(sx)
-	self.scaleX = self.scaleX + sx
-	self.scaleY = self.scaleY + sx
+function camera:zoom(sx)
+	-- if zooming in, zoon towards mouse
+	if (sx < 0) then
+		local x, y = love.mouse.getPosition()
+
+		local x_mid = love.graphics.getWidth() * 0.5
+		local y_mid = love.graphics.getHeight() * 0.5
+
+		local x_offs = (x - x_mid) * (1 / self.scale) 
+		local y_offs = (y - y_mid) * (1 / self.scale) 
+
+		camera:move(x_offs, y_offs)
+	else
+		local x_mid = love.graphics.getWidth() * 0.5
+		local y_mid = love.graphics.getHeight() * 0.5
+
+		local x_offs = self.x + x_mid 
+		local y_offs = self.y + y_mid 
+		--camera:move(x_offs, y_offs)
+	end
+
+	-- set our scale
+	self.scale = self.scale + (sx * self.scale)
+	-- zoom towards mouse
+
+	
+	
+	
+	
 end
 
 function camera:setPosition(x, y)
@@ -49,19 +74,16 @@ function camera:setPosition(x, y)
 	self.y = y or self.y
 end
 
-function camera:setScale(sx, sy)
-	self.scaleX = sx or self.scaleX
-	self.scaleY = sy or self.scaleY
-
-	camera:setPosition(love.mouse.getPosition())
+function camera:setScale(s)
+	self.scale = sx or self.scale
 end
 
 -- mouse controls
 function love.wheelmoved(x, y)
     if y > 0 then
-        camera:scale(-.1)
+        camera:zoom(-.1)
     elseif y < 0 then
-        camera:scale(.1)
+        camera:zoom(.1)
     end
 end
 
